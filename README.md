@@ -6,6 +6,7 @@ Python 3.x
 system_info (for performance test only)
 
 # Sysfind help
+```bash
 usage: 
   Usage: /work/work_sudo/SYSFIND/GIT/sysfind/./sysfind.py [-d|--debug] [-v|--version] [-f|--full] [-q|--quiet] [-n|--dry-run] [-p|--perftest] [-h|--help]
 
@@ -20,8 +21,10 @@ options:
   -s SINCE, --since SINCE
                         Journalctl --since "1mounths ago" : or --since $(date -I --date '10days
                         ago' )
+```
 
 # Version history
+```bash
 sysfind.py
     #
     #    System Information Collector Tool (sysfind.py)
@@ -90,4 +93,5 @@ sysfind.py
     #    Ver 1.61  ADD: mstlink /sys/class/net/ib* MOD     08.26.2025
     #    Ver 1.62  ADD: mstconfig mstflint                 08.29.2025
     #    Ver 1.63  ADD: systemctl list-units               08.29.2025
+```
 
