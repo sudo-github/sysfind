@@ -1,0 +1,43 @@
+#!/bin/sh
+
+###
+### check_snoop_filter
+### Designed for server boards running Intel 5000X chipset 
+### Check if BIOS has Snoop Filter set to "Enabled"
+### (C) 2007 - ScaleMP Inc. 
+### Author: Sagy Volkov
+###
+### To Do: 
+###       1. Add a test to see if the board is SF-capable
+###       2. Modify the test to check for the actual SF bit in the DEV_ID string
+###          instead of comparing two hex digits (which only works for S5000XAL)
+###          the foreach loop requires chancing to test a specific bit according to 
+###          Intel's chipset specification rather than testing 8 bits that include
+###          different indicators. Might also be useful to report if the chipset
+###          is SF-capable (one other bt from that list) in a separate line
+
+# First, make sure we're root...
+if [ `id -u` -ne 0 ]; then
+    echo "ERROR: check_snoop_filter must be run as root"
+    exit 1
+fi
+
+sfDisable=c
+
+# Build a list of the relevant PCI devices/bridges from all the boards to iterate over
+boardsState=`/sbin/lspci -n | grep 1:10.0 | awk '{print $1}'`
+
+# Test for the Snoop Filter "Enabled" indicator for each device listed and print
+# the dev data and the translated SF Status for each 
+for eachBoard in $boardsState
+do
+  echo "Checking board#: `echo $eachBoard |cut -c1`"
+  echo "Device: $eachBoard"
+  /sbin/lspci -s $eachBoard -xxx | grep f0:
+  checkFlag=`/sbin/lspci -s $eachBoard -xxx | grep f0: | cut -c 6 `
+  if [[ $checkFlag = $sfDisable ]]; then
+  	echo "SF STATUS: Snoop Filter is disabled at board# `echo $eachBoard |cut -c1`"
+  else
+	echo "SF STATUS: Snoop Filter is enabled at board# `echo $eachBoard |cut -c1`"
+  fi
+done

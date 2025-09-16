@@ -1,0 +1,10 @@
+# dmidecode 3.2
+Getting SMBIOS data from sysfs.
+SMBIOS 3.1.1 present.
+
+Handle 0x0032, DMI type 11, 5 bytes
+OEM Strings
+	String 1: PSF:                                                            
+	String 2: Product ID: P16006-001
+	String 3: OEM String: 
+

@@ -1,0 +1,6 @@
+# this is a AUTO GENERATED FILE, DO NOT CHANGE IT OR COMMIT IT.
+# it will be regenerated every time vsmp is compiled.
+
+export MAX_VSMP_DEV_CAPACITY=33554432
+export CRASH_LOG=12582912
+export LOG_DATA_BUFFER_SIZE=8388608

@@ -1,0 +1,25 @@
+#!/bin/bash -x
+
+# /root/system_info
+( cd  mkl ; ./run.sh ) 2>&1 | tee -a log_mkl.txt 
+( cd  stream ; ./run.sh ) 2>&1 | tee -a log_stream.txt 
+
+grep SLP log_mkl.txt log_stream.txt
+
+# [root@cube10 system_info]# grep SLP log_mkl.txt log_stream.txt
+# log_mkl.txt:SLP:MKL [1 CPU = 35776 MFlops/sec]
+# log_mkl.txt:SLP:MKL [CPUs=  1]: GFlop/s: 134.04
+# log_mkl.txt:SLP:MKL [CPUs=  2]: GFlop/s: 251.98
+# log_mkl.txt:SLP:MKL [CPUs=  4]: GFlop/s: 386.77
+# log_mkl.txt:SLP:MKL [BD#=  0]: GFlop/s: 440.98
+# log_mkl.txt:SLP:End of MKL
+# log_stream.txt:SLP:Stream Triad
+# log_stream.txt:SLP:Stream [CPUs=  1]: Triad:   29010.4
+# log_stream.txt:SLP:Stream [CPUs=  2]: Triad:   30838.6
+# log_stream.txt:SLP:Stream [CPUs=  4]: Triad:   31371.5
+# log_stream.txt:SLP:Stream [BD#=  0]: Triad:   31361.2
+# log_stream.txt:SLP:End of Stream Triad
+# [root@cube10 system_info]#
+#
+# ./system_info.sh `pwd` 0 stg
+# Output is going to performance_test-micro10-NATIVE-2023-08-17-130946-JST.tgz

@@ -1,0 +1,63 @@
++ cd mkl
++ ./run.sh
+pid 167379's current affinity list: 0-3
+pid 167379's new affinity list: 0-3
+1 Useful Boards out of 1 (4 CPUs each)
+CPU Affinity used: 3,2,1,0
+
+SGEMM : Performing C[3999][3999] = A[3999][3999] x B[3999][3999]  (0.2GB)
+SGEMM : Init time: A = 0.01 , B = 0.01 , C = 0.01
+SGEMM : Iter 1 : Performing 1 sub-calculations.
+SGEMM :        Part    1    Calc times: 0.95      GFlop/s: 134.67
+SGEMM :   Init time: 0.03   Calc times: 0.95      GFlop/s: 134.67
+SGEMM : Iter 2 : Performing 1 sub-calculations.
+SGEMM :        Part    1    Calc times: 0.95      GFlop/s: 134.04
+SGEMM :   Init time: 0.03   Calc times: 0.95      GFlop/s: 134.04
+log.txt results.txt run.sh
+
+
+SGEMM : Performing C[5186][5186] = A[5186][5186] x B[5186][5186]  (0.3GB)
+SGEMM : Init time: A = 0.01 , B = 0.01 , C = 0.01
+SGEMM : Iter 1 : Performing 1 sub-calculations.
+SGEMM :        Part    1    Calc times: 1.08      GFlop/s: 258.85
+SGEMM :   Init time: 0.03   Calc times: 1.08      GFlop/s: 258.85
+SGEMM : Iter 2 : Performing 1 sub-calculations.
+SGEMM :        Part    1    Calc times: 1.11      GFlop/s: 251.98
+SGEMM :   Init time: 0.03   Calc times: 1.11      GFlop/s: 251.98
+log.txt results.txt run.sh
+
+
+SGEMM : Performing C[6725][6725] = A[6725][6725] x B[6725][6725]  (0.5GB)
+SGEMM : Init time: A = 0.04 , B = 0.01 , C = 0.02
+SGEMM : Iter 1 : Performing 1 sub-calculations.
+SGEMM :        Part    1    Calc times: 1.70      GFlop/s: 358.69
+SGEMM :   Init time: 0.07   Calc times: 1.70      GFlop/s: 358.68
+SGEMM : Iter 2 : Performing 1 sub-calculations.
+SGEMM :        Part    1    Calc times: 1.57      GFlop/s: 386.77
+SGEMM :   Init time: 0.07   Calc times: 1.57      GFlop/s: 386.77
+log.txt results.txt run.sh
+
+Running 4 way MKL on each boards!
+
+Running 4 way on BD #0 ...
+
+SGEMM : Performing C[6725][6725] = A[6725][6725] x B[6725][6725]  (0.5GB)
+SGEMM : Init time: A = 0.01 , B = 0.01 , C = 0.01
+SGEMM : Iter 1 : Performing 1 sub-calculations.
+SGEMM :        Part    1    Calc times: 1.25      GFlop/s: 487.99
+SGEMM :   Init time: 0.04   Calc times: 1.25      GFlop/s: 487.99
+SGEMM : Iter 2 : Performing 1 sub-calculations.
+SGEMM :        Part    1    Calc times: 1.38      GFlop/s: 440.98
+SGEMM :   Init time: 0.04   Calc times: 1.38      GFlop/s: 440.97
+log.txt results.txt run.sh
+
+
+SLP:MKL [1 CPU = 35776 MFlops/sec]
+SLP:MKL [CPUs=  1]: GFlop/s: 134.04
+SLP:MKL [CPUs=  2]: GFlop/s: 251.98
+SLP:MKL [CPUs=  4]: GFlop/s: 386.77
+
+SLP:MKL [BD#=  0]: GFlop/s: 440.98
+SLP:End of MKL
+
+

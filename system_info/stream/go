@@ -1,0 +1,11 @@
+#!/bin/bash -x
+
+export OMP_NUM_THREADS=4
+
+export KMP_AFFINITY=compact,verbose,0,0
+
+./stream_omp.intel
+
+export KMP_AFFINITY=norespect,verbose,compact
+
+./stream_omp.intel
