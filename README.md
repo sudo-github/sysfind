@@ -95,3 +95,15 @@ sysfind.py
     #    Ver 1.63  ADD: systemctl list-units               08.29.2025
 ```
 
+## Changelog
+
+### v1.66 (2025-12-16)
+- Kerberos / FreeIPA 環境向けに認証処理を改善
+  - keytab が存在する場合のみ `kinit -k` を実行
+  - 既存 TGT が有効な場合は再実行しない設計に変更
+- ログ出力を整理
+  - kinit 実行時に INFO ログを出力
+  - 失敗時でも他のログ収集処理は継続
+- 内部処理のリファクタリング
+  - 認証処理を関数化し可読性を向上
+
