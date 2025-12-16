@@ -6,12 +6,6 @@ import os
 import sys
 from argparse import ArgumentParser
 import re
-import subprocess
-import logging
-
-logging.basicConfig(level=logging.INFO)
-KEYTAB = "/root/admin.keytab"
-PRINCIPAL = "admin"
 
 def debugprint(debuglst):
     for ent in debuglst:
@@ -67,40 +61,6 @@ def parser():
     return debug, pversion, full, quiet, dryrun, perftest, since
 
 
-
-
-def has_valid_tgt():
-    return subprocess.run(
-        ["klist", "-s"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    ).returncode == 0
-
-
-def kinit_if_needed():
-    if has_valid_tgt():
-        logging.debug("Valid Kerberos TGT already exists")
-        return True
-
-    if not os.path.isfile(KEYTAB):
-        logging.warning("Kerberos keytab not found: %s", KEYTAB)
-        return False
-
-    logging.info("Executing kinit using keytab: %s", KEYTAB)
-    result = subprocess.run(
-        ["kinit", "-k", "-t", KEYTAB, PRINCIPAL],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-
-    #  実行結果に応じたログ
-    if result.returncode == 0:
-        logging.info("kinit executed using keytab")
-        return True
-    else:
-        logging.error("kinit using keytab failed")
-        return False
-
 def Journalsince(since, key, kconf):
     """Journalsince
     # Journalsince:  Replace Default '1week ago' to argument since
@@ -147,9 +107,7 @@ def StatlistExec(debug, full, quiet, key, kconf):
     import time
 
     icnt = 0
-    hname_full = os.uname()[1]
-    hname = hname_full.split('.')[0]
-    # hname = '%s' % os.uname()[1]
+    hname = '%s' % os.uname()[1]
     dt_now = datetime.datetime.now()
     tmpf = '{0}_systeminfo_{1}.txt'.format(hname, dt_now.strftime('%Y%m%d_%H%M%S'))
     logtee = ' 2>&1 | tee -a {0}'.format(tmpf)
@@ -419,7 +377,6 @@ def StatlistImportin(debug):
         {"name": "ibnetdiscover ", "show": True, "exe": "/usr/sbin/ibnetdiscover -l", "chk": "/usr/sbin/ibnetdiscover"},
         {"name": "ibnetdiscoverf", "show": True, "exe": "/usr/sbin/ibnetdiscover --full",
          "chk": "/usr/sbin/ibnetdiscover"},
-        {"name": "ib_rdma_link  ", "show": True, "exe": "/usr/sbin/rdma -d  link",  "chk": "/usr/sbin/dmidecode"},
         {"name": "dmidecode     ", "show": True, "exe": "/usr/sbin/dmidecode",  "chk": "/usr/sbin/dmidecode"},
         {"name": "biosdecode    ", "show": True, "exe": "/usr/sbin/biosdecode", "chk": "/usr/sbin/biosdecode"},
         {"name": "biosdevname-d ", "show": True, "exe": "biosdevname -d",       "chk": "/usr/sbin/biosdevname"},
@@ -624,9 +581,9 @@ def StatlistImportin(debug):
         {"name": "dmraid-list",      "show": True, "exe": "dmraid -r", "chk": "/sbin/dmraid"},
         {"name": "dmraid-status",    "show": True, "exe": "dmraid -s", "chk": "/sbin/dmraid"},
         {"name": "dmraid-mapper",    "show": True, "exe": "ls -l /dev/mapper", "chk": "/dev/mapper"},
-        {"name": "sas3ircu-list",    "show": False, "exe": "sas3ircu list", "chk": "/root/bin/sas3ircu"},
-        {"name": "sas3ircu-display", "show": False, "exe": "sas3ircu 0 display", "chk": "/root/bin/sas3ircu"},
-        {"name": "sas3ircu-status" , "show": False, "exe": "sas3ircu 0 status", "chk": "/root/bin/sas3ircu"},
+        {"name": "sas3ircu-list",    "show": True, "exe": "sas3ircu list", "chk": "/root/bin/sas3ircu"},
+        {"name": "sas3ircu-display", "show": True, "exe": "sas3ircu 0 display", "chk": "/root/bin/sas3ircu"},
+        {"name": "sas3ircu-status" , "show": True, "exe": "sas3ircu 0 status", "chk": "/root/bin/sas3ircu"},
         {"name": "smb.conf      ", "show": True, "exe": "cat /etc/samba/smb.conf", "chk": "/etc/samba/smb.conf"},
         {"name": "smbstatus     ", "show": True, "exe": "/usr/bin/smbstatus", "chk": "/etc/samba/smb.conf"},
         {"name": "smbstatus-d4  ", "show": True, "exe": "/usr/bin/smbstatus -d 4", "chk": "/etc/samba/smb.conf"},
@@ -635,19 +592,19 @@ def StatlistImportin(debug):
         {"name": "hwloc-ver     ", "show": True, "exe": "/usr/bin/hwloc-ls --version", "chk": "/usr/bin/hwloc-ls"},
         {"name": "hwloc-ls      ", "show": True, "exe": "/usr/bin/hwloc-ls", "chk": "/usr/bin/hwloc-ls"},
         {"name": "hwloc-info    ", "show": True, "exe": "/usr/bin/hwloc-info", "chk": "/usr/bin/hwloc-ls"},
-        {"name": "torque-pbsnode", "show": False, "exe": "/usr/local/bin/pbsnodes -a", "chk": "/usr/local/bin/pbsnodes"},
-        {"name": "torque-momctl ", "show": False, "exe": "/usr/local/sbin/momctl -d 6", "chk": "/usr/local/sbin/momctl"},
-        {"name": "torque-qmgr   ", "show": False, "exe": "/usr/local/bin/qmgr -c 'p s'", "chk": "/usr/local/bin/qmgr"},
-        {"name": "torque-qstatq ", "show": False, "exe": "/usr/local/bin/qstat -fQ", "chk": "/usr/local/bin/qstat"},
-        {"name": "torque-qstatb ", "show": False, "exe": "/usr/local/bin/qstat -fB", "chk": "/usr/local/bin/qstat"},
-        {"name": "torque-svrname", "show": False, "exe": "cat /var/spool/torque/server_name",
+        {"name": "torque-pbsnode", "show": True, "exe": "/usr/local/bin/pbsnodes -a", "chk": "/usr/local/bin/pbsnodes"},
+        {"name": "torque-momctl ", "show": True, "exe": "/usr/local/sbin/momctl -d 6", "chk": "/usr/local/sbin/momctl"},
+        {"name": "torque-qmgr   ", "show": True, "exe": "/usr/local/bin/qmgr -c 'p s'", "chk": "/usr/local/bin/qmgr"},
+        {"name": "torque-qstatq ", "show": True, "exe": "/usr/local/bin/qstat -fQ", "chk": "/usr/local/bin/qstat"},
+        {"name": "torque-qstatb ", "show": True, "exe": "/usr/local/bin/qstat -fB", "chk": "/usr/local/bin/qstat"},
+        {"name": "torque-svrname", "show": True, "exe": "cat /var/spool/torque/server_name",
          "chk": "/var/spool/torque/server_name"},
-        {"name": "torque-momcfg ", "show": False, "exe": "cat /var/spool/torque/mom_priv/config",
+        {"name": "torque-momcfg ", "show": True, "exe": "cat /var/spool/torque/mom_priv/config",
          "chk": "/var/spool/torque/mom_priv/config"},
-        {"name": "torque-svrnode", "show": False, "exe": "cat /var/spool/torque/server_priv/nodes",
+        {"name": "torque-svrnode", "show": True, "exe": "cat /var/spool/torque/server_priv/nodes",
          "chk": "/var/spool/torque/server_priv/nodes"},
         {"name": "pbs.conf      ", "show": True, "exe": "cat /etc/pbs.conf", "chk": "/etc/pbs.conf"},
-        {"name": "mom_config    ", "show": False, "exe": "cat /var/spool/pbs/mom_priv/config",
+        {"name": "mom_config    ", "show": True, "exe": "cat /var/spool/pbs/mom_priv/config",
          "chk": "/var/spool/pbs/mom_priv/config"},
         {"name": "pbs-pbsnodes  ", "show": True, "exe": "/opt/pbs/bin/pbsnodes -a", "chk": "/opt/pbs/bin/pbsnodes"},
         {"name": "pbs-pbsnodesS ", "show": True, "exe": "/opt/pbs/bin/pbsnodes -aS", "chk": "/opt/pbs/bin/pbsnodes"},
@@ -709,79 +666,6 @@ def StatlistImportin(debug):
         {"name": "mstflint-ib0", "show": True,
          "exe": "sed -n 's/PCI_SLOT_NAME=//p' /sys/class/net/ib*/device/uevent 2>/dev/null | xargs -t -i bash -c 'echo ; echo :::EL7:::  mstflint-{}; mstflint -d {} q full'",
          "chk": "/usr/bin/mstflint"},
-        {"name": "slurmctld.log ", "show": True, "exe": "cat /var/log/slurmctld.log", "chk": "/var/log/slurmctld.log"},
-        {"name": "slurmd.log    ", "show": True, "exe": "cat /var/log/slurmd.log", "chk": "/var/log/slurmd.log"},
-        {"name": "slurmdbd.log  ", "show": True, "exe": "cat /var/log/slurm/slurmdbd.log", "chk": "/var/log/slurm/slurmdbd.log"},
-        {"name": "slurm.conf    ", "show": True, "exe": "cat /etc/slurm/slurm.conf", "chk": "/etc/slurm/slurm.conf"},
-        {"name": "slurm_cgroup.conf   ", "show": True, "exe": "cat /etc/slurm/cgroup.conf", "chk": "/etc/slurm/cgroup.conf"},
-        {"name": "slurm_slurmdbd.conf ", "show": True, "exe": "cat /etc/slurm/slurmdbd.conf", "chk": "/etc/slurm/slurmdbd.conf"},
-        {"name": "slurm_sinfo_Nl      ", "show": True, "exe": "/usr/bin/sinfo -N -l",    "chk": "/usr/bin/sinfo"},
-        {"name": "slurm_squeue_l      ", "show": True, "exe": "/usr/bin/squeue -l",    "chk": "/usr/bin/squeue"},
-        {"name": "slurm_squeue_l      ", "show": True, "exe": "/usr/bin/squeue -l",    "chk": "/usr/bin/squeue"},
-        {"name": "slurm_sacctmgr_show ", "show": True, "exe": "/usr/bin/sacctmgr show cluster",    "chk": "/usr/bin/sacctmgr"},
-        {"name": "slurm_sacctmgr_conf ", "show": True, "exe": "/usr/bin/sacctmgr list Configuration",    "chk": "/usr/bin/sacctmgr"},
-        {"name": "slurm_sacctmgr_stats", "show": True, "exe": "/usr/bin/sacctmgr show stats",    "chk": "/usr/bin/sacctmgr"},
-        {"name": "slurm_scontrol_part ", "show": True, "exe": "/usr/bin/scontrol show partitions",    "chk": "/usr/bin/scontrol"},
-        {"name": "slurm_scontrol_nodes", "show": True, "exe": "/usr/bin/scontrol show nodes",    "chk": "/usr/bin/scontrol"},
-        {"name": "prometheus_yml"      , "show": True, "exe": "cat /etc/prometheus/prometheus.yml",    "chk": "/etc/prometheus/prometheus.yml"},
-        {"name": "prom_node_exporter" , "show": True, "exe": "cat /etc/default/node_exporter",    "chk": "/etc/default/node_exporter"},
-        {"name": "prom_grafana_ini"   , "show": True, "exe": "cat /etc/grafana/grafana.ini",    "chk": "/etc/grafana/grafana.ini"},
-        {"name": "ipa_klist"          , "show": True, "exe": "klist"                       ,    "chk": "/usr/bin/klist"},
-        {"name": "ipa_version"        , "show": True, "exe": "ipa --version"               ,    "chk": "/usr/bin/ipa"},
-        {"name": "ipa_ipactl_status"  , "show": True, "exe": "ipactl status"               ,    "chk": "/usr/bin/ipa"},
-        {"name": "ipa_config_show"    , "show": True, "exe": "ipa config-show"             ,    "chk": "/usr/bin/ipa"},
-        {"name": "ipa_dnsconfig_show" , "show": True, "exe": "ipa dnsconfig-show"          ,    "chk": "/usr/bin/ipa"},
-        {"name": "ipa_user_find"      , "show": True, "exe": "ipa user-find --all"         ,    "chk": "/usr/bin/ipa"},
-        {"name": "ipa_host_find"      , "show": True, "exe": "ipa host-find --all"         ,    "chk": "/usr/bin/ipa"},
-        {"name": "ipa_server_find"    , "show": True, "exe": "ipa server-find --all"       ,    "chk": "/usr/bin/ipa"},
-        {"name": "ipa_pwpolicy_find"  , "show": True, "exe": "ipa pwpolicy-find --all"     ,    "chk": "/usr/bin/ipa"},
-        {"name": "ipa_service_find"   , "show": True, "exe": "ipa service-find --all"      ,    "chk": "/usr/bin/ipa"},
-        {"name": "ipa_dnsserver_find" , "show": True, "exe": "ipa dnsserver-find --all"    ,    "chk": "/usr/bin/ipa"},
-        {"name": "ipa_getcert_list"   , "show": True, "exe": "ipa-getcert list"            ,    "chk": "/usr/bin/ipa-getcert"},
-        {"name": "ipa_healthcheck"    , "show": True, "exe": "ipa-healthcheck --output-type json --verbose" , "chk": "/usr/bin/ipa-healthcheck"},
-        {"name": "ipa_default.conf"   , "show": True, "exe": "cat /etc/ipa/default.conf",    "chk": "/etc/ipa/default.conf"},
-        {"name": "ipa_krb5.conf"      , "show": True, "exe": "cat /etc/krb5.conf",    "chk": "/etc/krb5.conf"},
-        {"name": "ipa_sssd.conf"      , "show": True, "exe": "cat /etc/sssd/sssd.conf",    "chk": "/etc/sssd/sssd.conf"},
-        {"name": "ipa_ipa-ext.conf"   , "show": True, "exe": "cat /etc/named/ipa-ext.conf",    "chk": "/etc/named/ipa-ext.conf"},
-        {"name": "ipa_ipa-log-ext.conf", "show": True, "exe": "cat /etc/named/ipa-logging-ext.conf", "chk": "/etc/named/ipa-logging-ext.conf"},
-        {"name": "ipa_ipa-opt-ext.conf", "show": True, "exe": "cat /etc/named/ipa-options-ext.conf", "chk": "/etc/named/ipa-options-ext.conf"},
-        {"name": "ipa_kadmind.log"    , "show": True, "exe": "cat /var/log/kadmind.log",    "chk": "/var/log/kadmind.log"},
-        {"name": "ipa_krb5kdc.log"    , "show": True, "exe": "cat /var/log/krb5kdc.log",    "chk": "/var/log/krb5kdc.log"},
-        {"name": "ipa-custodia.audit.log" , "show": True, "exe": "cat /var/log/ipa-custodia.audit.log",  "chk": "/var/log/ipa-custodia.audit.log"},
-        {"name": "ipaclient-install.log"  , "show": True, "exe": "cat /var/log/ipaclient-install.log",   "chk": "/var/log/ipaclient-install.log"},
-        {"name": "ipaclient-uninstall.log", "show": True, "exe": "cat /var/log/ipaclient-uninstall.log", "chk": "/var/log/ipaclient-uninstall.log"},
-        {"name": "ipaserver-install.log"  , "show": True, "exe": "cat /var/log/ipaserver-install.log",   "chk": "/var/log/ipaserver-install.log"},
-        {"name": "ipaserver-uninstall.log", "show": True, "exe": "cat /var/log/ipaserver-uninstall.log", "chk": "/var/log/ipaserver-uninstall.log"},
-        {"name": "ipa_named_capacity.log", "show": True, "exe": "cat /var/named/data/capacity.log", "chk": "/var/named/data/capacity.log"},
-        {"name": "ipa_named_database.log", "show": True, "exe": "cat /var/named/data/database.log", "chk": "/var/named/data/database.log"},
-        {"name": "ipa_named_dnssec.log", "show": True, "exe": "cat /var/named/data/dnssec.log", "chk": "/var/named/data/dnssec.log"},
-        {"name": "ipa_named_lame-servers.log", "show": True, "exe": "cat /var/named/data/lame-servers.log", "chk": "/var/named/data/lame-servers.log"},
-        {"name": "ipa_named_named.log", "show": True, "exe": "cat /var/named/data/named.log", "chk": "/var/named/data/named.log"},
-        {"name": "ipa_named_query.log", "show": True, "exe": "cat /var/named/data/query.log", "chk": "/var/named/data/query.log"},
-        {"name": "ipa_named_query_errors.log", "show": True, "exe": "cat /var/named/data/query_errors.log", "chk": "/var/named/data/query_errors.log"},
-        {"name": "ipa_named_resolver.log", "show": True, "exe": "cat /var/named/data/resolver.log", "chk": "/var/named/data/resolver.log"},
-        {"name": "ipa_named_security.log", "show": True, "exe": "cat /var/named/data/security.log", "chk": "/var/named/data/security.log"},
-        {"name": "ipa_named_update.log", "show": True, "exe": "cat /var/named/data/update.log", "chk": "/var/named/data/update.log"},
-        {"name": "sssd_krb5_child.log" , "show": True, "exe": "cat /var/log/sssd/krb5_child.log",    "chk": "/var/log/sssd/krb5_child.log"},
-        {"name": "sssd_ldap_child.log" , "show": True, "exe": "cat /var/log/sssd/ldap_child.log",    "chk": "/var/log/sssd/ldap_child.log"},
-        {"name": "sssd_sssd.log"       , "show": True, "exe": "cat /var/log/sssd/sssd.log",          "chk": "/var/log/sssd/sssd.log"},
-        {"name": "sssd_ifp.log"       , "show": True, "exe": "cat /var/log/sssd/sssd_ifp.log",          "chk": "/var/log/sssd/sssd_ifp.log"},
-        {"name": "sssd_kcm.log"       , "show": True, "exe": "cat /var/log/sssd/sssd_kcm.log",          "chk": "/var/log/sssd/sssd_kcm.log"},
-        {"name": "sssd_nss.log"       , "show": True, "exe": "cat /var/log/sssd/sssd_nss.log",          "chk": "/var/log/sssd/sssd_nss.log"},
-        {"name": "sssd_pac.log"       , "show": True, "exe": "cat /var/log/sssd/sssd_pac.log",          "chk": "/var/log/sssd/sssd_pac.log"},
-        {"name": "sssd_pam.log"       , "show": True, "exe": "cat /var/log/sssd/sssd_pam.log",          "chk": "/var/log/sssd/sssd_pam.log"},
-        {"name": "sssd_ssh.log"       , "show": True, "exe": "cat /var/log/sssd/sssd_ssh.log",          "chk": "/var/log/sssd/sssd_ssh.log"},
-        {"name": "sssd_sudo.log"       , "show": True, "exe": "cat /var/log/sssd/sssd_sudo.log",        "chk": "/var/log/sssd/sssd_sudo.log"},
-        {"name": "sssd_sssd_domain.log", "show": True, "exe": "cat /var/log/sssd/sssd_$(hostname -d).log", "chk": True },
-        {"name": "ipa_slapd_access   ", "show": True, 
-         "exe": "ls -1 /var/log/dirsrv/slapd-*/access 2>/dev/null | xargs -i bash -c 'echo ; echo :::EL7::: ipa_slapd_$(basename {}); cat {}'", 
-         "chk": "/bin/true"},
-        {"name": "ipa_slapd_errors   ", "show": True, 
-         "exe": "ls -1 /var/log/dirsrv/slapd-*/errors 2>/dev/null | xargs -i bash -c 'echo ; echo :::EL7::: ipa_slapd_$(basename {}); cat {}'", 
-         "chk": "/bin/true"},
-        {"name": "ipa_slapd_security ", "show": True, 
-         "exe": "ls -1 /var/log/dirsrv/slapd-*/security 2>/dev/null | xargs -i bash -c 'echo ; echo :::EL7::: ipa_slapd_$(basename {}); cat {}'", 
-         "chk": "/bin/true"},
         {"name": "sysfindversion", "show": True, "exe": "/root/bin/sysfind.py -v", "chk": "/bin/true"}
     ])
 
@@ -860,9 +744,6 @@ def main():
     #    Ver 1.61  ADD: mstlink /sys/class/net/ib* MOD     08.26.2025
     #    Ver 1.62  ADD: mstconfig mstflint                 08.29.2025
     #    Ver 1.63  ADD: systemctl list-units               08.29.2025
-    #    Ver 1.64  ADD: SLURM config files                 10.01.2025
-    #    Ver 1.65  ADD: IdM, IPA, SSSD, Prometheus         10.31.2025
-    #    Ver 1.66  ADD: kinit, kinit_if_needed()           12.16.2025
     #
     """
     cwd = os.getcwd()
@@ -881,7 +762,6 @@ def main():
     linevers = main.__doc__.splitlines(True)
     os.system('date; /usr/bin/hostnamectl')
     print( linevers[-3] )
-    kinit_if_needed()
     # sys.exit(80)
     # statlistfile = 'lists.py'
     # kconf = StatlistImport(debug,statlistfile) 
