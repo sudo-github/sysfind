@@ -291,6 +291,7 @@ def StatlistImportin(debug):
         {"name": "ntp.conf      ", "show": True, "exe": "cat /etc/ntp.conf", "chk": "/etc/ntp.conf"},
         {"name": "ntpq          ", "show": True, "exe": "/usr/bin/ntpq -np", "chk": "/usr/bin/ntpq"},
         {"name": "xorg.conf     ", "show": True, "exe": "cat /etc/X11/xorg.conf", "chk": "/etc/X11/xorg.conf"},
+        {"name": "xorg.conf.d   ", "show": True, "exe": "more /etc/X11/xorg.conf.d/*", "chk": "/etc/X11/xorg.conf"},
         {"name": "timedatectl   ", "show": True, "exe": "/usr/bin/timedatectl", "chk": "/usr/bin/timedatectl"},
         {"name": "adjtime       ", "show": True, "exe": "cat /etc/adjtime", "chk": "/etc/adjtime"},
         {"name": "hwclock       ", "show": True, "exe": "/usr/sbin/hwclock --show", "chk": "/usr/sbin/hwclock"},
@@ -308,6 +309,13 @@ def StatlistImportin(debug):
         {"name": "ulimit        ", "show": True, "exe": "ulimit -a", "chk": "/bin/bash"},
         {"name": "env           ", "show": True, "exe": "/usr/bin/env", "chk": "/usr/bin/env"},
         {"name": "shopt         ", "show": True, "exe": "shopt", "chk": "/bin/bash"},
+        {"name": "wgetrc        ", "show": True, "exe": "cat /etc/wgetrc",  "chk": "/etc/wgetrc"},
+        {"name": "bashrc        ", "show": True, "exe": "cat /etc/bashrc",  "chk": "/etc/bashrc"},
+        {"name": "environment   ", "show": True, "exe": "cat /etc/environment", "chk": "/etc/environment"},
+        {"name": "profile       ", "show": True, "exe": "cat /etc/profile", "chk": "/etc/profile"},
+        {"name": "profile_d     ", "show": True,
+         "exe": "ls -1 /etc/profile.d  | xargs -i bash -c 'echo ; echo :::EL7:::  profile_d-{}; cat /etc/profile.d/{}'",
+         "chk": "/etc/profile.d"},
         {"name": "free-g        ", "show": True, "exe": "/usr/bin/free -g", "chk": "/usr/bin/free"},
         {"name": "free          ", "show": True, "exe": "/usr/bin/free   ", "chk": "/usr/bin/free"},
         {"name": "df_ht         ", "show": True, "exe": "/bin/df -hT ", "chk": "/bin/df"},
@@ -404,6 +412,8 @@ def StatlistImportin(debug):
         {"name": "smart_sdc     ", "show": True, "exe": "/usr/sbin/smartctl -a /dev/sdc", "chk": "/dev/sdc"},
         {"name": "smart_nvme0   ", "show": True, "exe": "/usr/sbin/smartctl -a /dev/nvme0", "chk": "/dev/nvme0"},
         {"name": "smart_nvme0n1 ", "show": True, "exe": "/usr/sbin/smartctl -a /dev/nvme0n1", "chk": "/dev/nvme0n1"},
+        {"name": "smart_nvme1   ", "show": True, "exe": "/usr/sbin/smartctl -a /dev/nvme1", "chk": "/dev/nvme1"},
+        {"name": "smart_nvme1n1 ", "show": True, "exe": "/usr/sbin/smartctl -a /dev/nvme1n1", "chk": "/dev/nvme1n1"},
         {"name": "pvscan        ", "show": True, "exe": "/sbin/pvscan", "chk": "/sbin/pvscan"},
         {"name": "vgscan        ", "show": True, "exe": "/sbin/vgscan", "chk": "/sbin/vgscan"},
         {"name": "lvscan        ", "show": True, "exe": "/sbin/lvscan", "chk": "/sbin/lvscan"},
@@ -537,6 +547,8 @@ def StatlistImportin(debug):
         {"name": "yum-list      ", "show": True, "exe": "/usr/bin/yum list", "chk": "/etc/yum.repos.d"},
         {"name": "yum-grouplist ", "show": True, "exe": "/usr/bin/yum -v grouplist hidden", "chk": "/etc/yum.repos.d"},
         {"name": "yum-history   ", "show": True, "exe": "/usr/bin/yum history"            , "chk": "/etc/yum.repos.d"},
+        {"name": "dnf-modulelist", "show": True, "exe": "dnf module list"                 , "chk": "/etc/yum.repos.d"},
+        {"name": "module_avail  ", "show": True, "exe": "module avail"                    , "chk": "/usr/share/modulefiles"},
         {"name": "chkconfig     ", "show": True, "exe": "/sbin/chkconfig --list", "chk": "/etc/chkconfig.d"},
         {"name": "service-stat  ", "show": True, "exe": "/sbin/service --status-all", "chk": "/etc/init.d"},
         {"name": "list-units    ", "show": True, "exe": "/usr/bin/systemctl --no-pager list-units", "chk": "/bin/true"},
@@ -572,6 +584,8 @@ def StatlistImportin(debug):
         {"name": "messages      ", "show": True,
          "exe": "ls -1 /var/log/messages* | xargs -i bash -c 'echo ; echo :::EL7:::  {}; cat {}'",
          "chk": "/var/log/messages"},
+        {"name": "rasmcctl-summary", "show": True, "exe": "ras-mc-ctl --summary", "chk": "/var/lib/rasdaemon/ras-mc_event.db"},
+        {"name": "rasmcctl-errors" , "show": True, "exe": "ras-mc-ctl --errors", "chk": "/var/lib/rasdaemon/ras-mc_event.db"},
         {"name": "journal-boots ", "show": True, "exe": "journalctl --list-boots --no-pager", "chk": "/usr/bin/journalctl"},
         {"name": "journalctl    ", "show": True, "exe": "journalctl  -a  --since '1week ago' --no-pager", "chk": "/usr/bin/journalctl"},
         {"name": "ps-forest-e   ", "show": True, "exe": "ps --forest -e", "chk": "/bin/true"},
@@ -599,13 +613,13 @@ def StatlistImportin(debug):
          "exe": "ls -1 /etc/NetworkManager/system-connections/*.nmconnection 2>/dev/null | xargs -i bash -c 'echo ; echo :::EL7::: `basename \"{}\" | sed \"s/ /_/g\"`; cat \"{}\"'", "chk": "/etc/NetworkManager/system-connections"},
         {"name": "network       ", "show": True, "exe": "cat /etc/sysconfig/network", "chk": "/etc/sysconfig/network"},
         {"name": "ifconfig-info ", "show": True,
-         "exe": "ls -1 /sys/class/net | egrep -v 'br|lo' | xargs -i bash -c 'echo ; echo :::EL7:::  ifconfig-{}; ifconfig {}'",
+         "exe": "ls -1 /sys/class/net | grep -E -v 'br|lo' | xargs -i bash -c 'echo ; echo :::EL7:::  ifconfig-{}; ifconfig {}'",
          "chk": "/sys/class/net"},
         {"name": "ethtool-info  ", "show": True,
-         "exe": "ls -1 /sys/class/net | egrep -v 'br|lo' | xargs -i bash -c 'echo ; echo :::EL7:::  ethtool-{}; ethtool {}'",
+         "exe": "ls -1 /sys/class/net | grep -E -v 'br|lo' | xargs -i bash -c 'echo ; echo :::EL7:::  ethtool-{}; ethtool {}'",
          "chk": "/sys/class/net"},
         {"name": "ethtoolI-info  ", "show": True,
-         "exe": "ls -1 /sys/class/net | egrep -v 'br|lo' | xargs -i bash -c 'echo ; echo :::EL7:::  ethtoolI-{}; ethtool -i {}'",
+         "exe": "ls -1 /sys/class/net | grep -E -v 'br|lo' | xargs -i bash -c 'echo ; echo :::EL7:::  ethtoolI-{}; ethtool -i {}'",
          "chk": "/sys/class/net"},
         {"name": "affinity-udevd", "show": True, "exe": "taskset -pc `pidof systemd-udevd`",
          "chk": "/usr/lib/systemd/system/systemd-udevd.service"},
@@ -658,6 +672,8 @@ def StatlistImportin(debug):
         {"name": "torque-svrnode", "show": False, "exe": "cat /var/spool/torque/server_priv/nodes",
          "chk": "/var/spool/torque/server_priv/nodes"},
         {"name": "pbs.conf      ", "show": True, "exe": "cat /etc/pbs.conf", "chk": "/etc/pbs.conf"},
+        {"name": "pbs-sched_conf", "show": True, "exe": "cat /var/spool/pbs/sched_priv/sched_config", 
+         "chk": "/var/spool/pbs/sched_priv/sched_config"},
         {"name": "mom_config    ", "show": False, "exe": "cat /var/spool/pbs/mom_priv/config",
          "chk": "/var/spool/pbs/mom_priv/config"},
         {"name": "pbs-pbsnodes  ", "show": True, "exe": "/opt/pbs/bin/pbsnodes -a", "chk": "/opt/pbs/bin/pbsnodes"},
@@ -665,11 +681,15 @@ def StatlistImportin(debug):
         {"name": "pbs-qmgr_l_s  ", "show": True, "exe": "/opt/pbs/bin/qmgr -c 'l s'", "chk": "/opt/pbs/bin/qmgr"},
         {"name": "pbs-qmgr_p_s  ", "show": True, "exe": "/opt/pbs/bin/qmgr -c 'p s'", "chk": "/opt/pbs/bin/qmgr"},
         {"name": "pbs-qmgr_l_h  ", "show": True, "exe": "/opt/pbs/bin/qmgr -c 'l h'", "chk": "/opt/pbs/bin/qmgr"},
+        {"name": "pbs-qmgr_l_n  ", "show": True, "exe": "/opt/pbs/bin/qmgr -c 'l n @default'", "chk": "/opt/pbs/bin/qmgr"},
+        {"name": "pbs-qmgr_p_n  ", "show": True, "exe": "/opt/pbs/bin/qmgr -c 'p n @default'", "chk": "/opt/pbs/bin/qmgr"},
         {"name": "pbs-qstat-q   ", "show": True, "exe": "/opt/pbs/bin/qstat -Q", "chk": "/opt/pbs/bin/qstat"},
         {"name": "pbs-qstat-fq  ", "show": True, "exe": "/opt/pbs/bin/qstat -fQ", "chk": "/opt/pbs/bin/qstat"},
         {"name": "pbs-qstat-b   ", "show": True, "exe": "/opt/pbs/bin/qstat -B", "chk": "/opt/pbs/bin/qstat"},
         {"name": "pbs-qstat-fb  ", "show": True, "exe": "/opt/pbs/bin/qstat -fB", "chk": "/opt/pbs/bin/qstat"},
         {"name": "pbs-qstat-f   ", "show": True, "exe": "/opt/pbs/bin/qstat -f", "chk": "/opt/pbs/bin/qstat"},
+        {"name": "pbs-pbsacct   ", "show": True, "exe": "/root/bin/pbsacct.py", "chk": "/root/bin/pbsacct.py"},
+        {"name": "pbs-pbsacctjsn", "show": True, "exe": "/root/bin/pbsacct.py --json", "chk": "/root/bin/pbsacct.py"},
         {"name": "gmetad3.conf  ", "show": True, "exe": "cat /etc/gmetad.conf", "chk": "/etc/gmetad.conf"},
         {"name": "gmond3.conf   ", "show": True, "exe": "cat /etc/gmond.conf", "chk": "/etc/gmond.conf"},
         {"name": "gmetad.conf   ", "show": True, "exe": "cat /etc/ganglia/gmetad.conf", "chk": "/etc/ganglia/gmetad.conf"},
@@ -735,8 +755,14 @@ def StatlistImportin(debug):
         {"name": "slurm_scontrol_part ", "show": True, "exe": "/usr/bin/scontrol show partitions",    "chk": "/usr/bin/scontrol"},
         {"name": "slurm_scontrol_nodes", "show": True, "exe": "/usr/bin/scontrol show nodes",    "chk": "/usr/bin/scontrol"},
         {"name": "prometheus_yml"      , "show": True, "exe": "cat /etc/prometheus/prometheus.yml",    "chk": "/etc/prometheus/prometheus.yml"},
-        {"name": "prom_node_exporter" , "show": True, "exe": "cat /etc/default/node_exporter",    "chk": "/etc/default/node_exporter"},
+        {"name": "prom_alertrule"     , "show": True, "exe": "cat /etc/prometheus/rules/alert.rules.yml" ,    "chk": "/etc/prometheus/rules/alert.rules.yml"},
+        {"name": "prom_default"       , "show": True, "exe": "cat /etc/default/prometheus" ,    "chk": "/etc/default/prometheus"},
+        {"name": "prom_node_exporter" , "show": True, "exe": "cat /etc/default/node_exporter",  "chk": "/etc/default/node_exporter"},
         {"name": "prom_grafana_ini"   , "show": True, "exe": "cat /etc/grafana/grafana.ini",    "chk": "/etc/grafana/grafana.ini"},
+        {"name": "prom_loki_conf"     , "show": True, "exe": "cat /etc/loki/config.yml"    ,    "chk": "/etc/loki/config.yml"},
+        {"name": "prom_promtail_conf" , "show": True, "exe": "cat /etc/promtail/config.yml",    "chk": "/etc/promtail/config.yml"},
+        {"name": "prom_alloy_conf"    , "show": True, "exe": "cat /etc/alloy/config.alloy" ,    "chk": "/etc/alloy/config.alloy"},
+        {"name": "prom_alloy_sysconf" , "show": True, "exe": "cat /etc/sysconfig/alloy"    ,    "chk": "/etc/sysconfig/alloy"},
         {"name": "ipa_klist"          , "show": True, "exe": "klist"                       ,    "chk": "/usr/bin/klist"},
         {"name": "ipa_version"        , "show": True, "exe": "ipa --version"               ,    "chk": "/usr/bin/ipa"},
         {"name": "ipa_ipactl_status"  , "show": True, "exe": "ipactl status"               ,    "chk": "/usr/bin/ipa"},
@@ -874,6 +900,15 @@ def main():
     #    Ver 1.64  ADD: SLURM config files                 10.01.2025
     #    Ver 1.65  ADD: IdM, IPA, SSSD, Prometheus         10.31.2025
     #    Ver 1.66  ADD: kinit, kinit_if_needed()           12.16.2025
+    #    Ver 1.67  ADD: xorg.conf.d                        01.09.2026
+    #    Ver 1.68  ADD: dnf module, module avail           01.16.2026
+    #    Ver 1.69  ADD: Loki, Promtail config.yml          01.23.2026
+    #    Ver 1.70  ADD: bashrc, environment, profile.d     01.26.2026
+    #    Ver 1.71  ADD: prometheus allow                   02.12.2026
+    #    Ver 1.72  ADD: openpbs sched_config               03.18.2026
+    #    Ver 1.73  ADD: openpbs qmgr print node @default   03.24.2026
+    #    Ver 1.74  CHG: egrep => grep -E                   05.25.2026
+    #    Ver 1.75  ADD: rasdaemon ras-mc-ctl               06.24.2026
     #
     """
     cwd = os.getcwd()
